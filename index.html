@@ -224,16 +224,22 @@
   <button onclick="callApi()">Call Backend API</button>
 
 <script>
-async function callApi() {
-  const res = await fetch("https://doc-apim-gateway.azure-api.net/hello");
-  const data = await res.json();
-  alert(data.message);
-}
+  async function callApi() {
+    try {
+      const response = await fetch("https://doc-apim-gateway.azure-api.net/hello");
+      const data = await response.json();
+      alert("API response: " + data.message);
+    } catch (error) {
+      alert("Error calling API: " + error);
+    }
+  }
 </script>
+
 
 
 </body>
 
 </html>
+
 
 
