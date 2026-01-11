@@ -226,7 +226,7 @@
 <script>
   async function callApi() {
     try {
-      const response = await fetch("https://doc-apim-gateway.azure-api.net/hello");
+      const response = await fetch("https://doc-apim-gateway.azure-api.net/doc-functions-api/hello");
       const data = await response.json();
       alert("API response: " + data.message);
     } catch (error) {
@@ -240,6 +240,7 @@
 </body>
 
 </html>
+
 
 
 
