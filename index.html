@@ -6,29 +6,28 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    📁 <span>Document Management</span>
-  </header>
+ <div class="container">
+  <h1>📁 Document Management</h1>
 
-  <main>
-    <div class="toolbar">
-      <input type="text" id="search" placeholder="Search documents..." />
-      <input type="file" id="fileInput" />
-      <button id="uploadBtn">Upload</button>
-    </div>
+  <div class="toolbar">
+    <input type="file" id="fileInput" />
+    <button id="uploadBtn">Upload</button>
+  </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>File Name</th>
-          <th>Size</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="documentsTable"></tbody>
-    </table>
-  </main>
+  <table>
+    <thead>
+      <tr>
+        <th>File Name</th>
+        <th>Size</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="documentsTable"></tbody>
+  </table>
+</div>
 
-  <script src="app.js"></script>
+<script src="app.js"></script>
+
 </body>
 </html>
+
