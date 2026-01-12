@@ -1,58 +1,45 @@
 * {
   box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
 }
 
 body {
   margin: 0;
-  font-family: "Segoe UI", system-ui, sans-serif;
-  background: linear-gradient(135deg, #eef2f7, #dce6f0);
-  color: #1f2937;
+  background: linear-gradient(120deg, #e0ecff, #f7e8ff);
 }
 
-header {
-  text-align: center;
-  font-size: 28px;
-  font-weight: 600;
-  padding: 24px;
-}
-
-main {
-  max-width: 1000px;
-  margin: auto;
+.container {
+  width: 900px;
+  max-width: 95%;
+  margin: 60px auto;
   background: white;
+  padding: 30px;
   border-radius: 14px;
-  padding: 20px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 25px;
 }
 
 .toolbar {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 20px;
 }
 
-input[type="text"],
-input[type="file"] {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
 button {
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 10px 16px;
   border: none;
-  background: #4f46e5;
-  color: white;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
 }
 
-button:hover {
-  opacity: 0.9;
-}
-
-button.danger {
-  background: #dc2626;
+#uploadBtn {
+  background: #5b6cff;
+  color: white;
 }
 
 table {
@@ -61,25 +48,30 @@ table {
 }
 
 th, td {
-  padding: 12px;
+  padding: 14px;
   border-bottom: 1px solid #eee;
 }
 
 th {
   text-align: left;
-  background: #f8fafc;
 }
 
-a.link {
-  color: #2563eb;
-  text-decoration: none;
+.actions {
+  display: flex;
+  gap: 10px;
 }
 
-a.link:hover {
-  text-decoration: underline;
+.download {
+  background: #2bb673;
+  color: white;
+}
+
+.delete {
+  background: #ff4d4f;
+  color: white;
 }
 
 .empty {
   text-align: center;
-  color: #6b7280;
+  color: #888;
 }
