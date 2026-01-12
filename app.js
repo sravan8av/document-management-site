@@ -90,21 +90,36 @@ function downloadDoc(id) {
 /* ---------------------------
    DELETE
 ---------------------------- */
-async function deleteDoc(id) {
-  if (!confirm("Delete this document?")) return;
+let deleteTargetId = null;
+
+function deleteDoc(id) {
+  deleteTargetId = id;
+  document.getElementById("modalOverlay").classList.remove("hidden");
+}
+
+document.getElementById("cancelDelete").onclick = () => {
+  deleteTargetId = null;
+  document.getElementById("modalOverlay").classList.add("hidden");
+};
+
+document.getElementById("confirmDelete").onclick = async () => {
+  if (!deleteTargetId) return;
 
   try {
-    const res = await fetch(`${API_BASE}/documents/${id}`, {
+    const res = await fetch(`${API_BASE}/documents/${deleteTargetId}`, {
       method: "DELETE"
     });
 
     if (!res.ok) throw new Error();
 
+    document.getElementById("modalOverlay").classList.add("hidden");
+    deleteTargetId = null;
     loadDocuments();
   } catch {
     alert("Delete failed");
   }
-}
+};
+
 
 /* ---------------------------
    UTIL
