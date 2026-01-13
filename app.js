@@ -1,76 +1,65 @@
-const API_BASE = "https://doc-apim-gateway.azure-api.net/doc-functions-api";
-
+const API = "https://doc-apim-gateway.azure-api.net/doc-functions-api";
 const table = document.getElementById("documentsTable");
-const uploadBtn = document.getElementById("uploadBtn");
 const fileInput = document.getElementById("fileInput");
 
 async function loadDocuments() {
-  try {
-    const res = await fetch(`${API_BASE}/documents`);
-    if (!res.ok) throw new Error("Failed to load");
+  const res = await fetch(`${API}/documents`);
+  const docs = await res.json();
+  table.innerHTML = "";
 
-    const docs = await res.json();
-    table.innerHTML = "";
-
-    docs.forEach(doc => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${doc.name}</td>
-        <td>${doc.size || "-"}</td>
+  docs.forEach(d => {
+    table.innerHTML += `
+      <tr>
+        <td>${d.name}</td>
+        <td>${(d.size / 1024).toFixed(1)} KB</td>
         <td>
-          <button onclick="downloadDoc('${doc.id}')">Download</button>
-          <button onclick="confirmDelete('${doc.id}')">Delete</button>
+          <button onclick="download('${d.name}')">Download</button>
+          <button onclick="confirmDelete('${d.id}','${d.name}')">Delete</button>
         </td>
-      `;
-      table.appendChild(row);
-    });
-  } catch {
-    alert("Failed to load documents");
-  }
+      </tr>`;
+  });
 }
 
-uploadBtn.onclick = async () => {
-  if (!fileInput.files.length) return alert("Select a file");
-
+document.getElementById("uploadBtn").onclick = async () => {
   const file = fileInput.files[0];
+  if (!file) return alert("Select file");
 
-  const res = await fetch(`${API_BASE}/documents`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name: file.name,
-      size: file.size
-    })
-  });
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const base64 = reader.result.split(",")[1];
 
-  if (!res.ok) return alert("Upload failed");
+    await fetch(`${API}/documents`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: file.name, content: base64 })
+    });
 
-  fileInput.value = "";
-  loadDocuments();
+    loadDocuments();
+  };
+  reader.readAsDataURL(file);
 };
 
-function downloadDoc(id) {
-  window.open(`${API_BASE}/documents/${id}/download`);
+function download(name) {
+  window.location = `${API}/documents/download?name=${name}`;
 }
 
-/* DELETE MODAL */
-let deleteId = null;
+/* Delete modal */
+let del = {};
 
-function confirmDelete(id) {
-  deleteId = id;
+function confirmDelete(id, name) {
+  del = { id, name };
   document.getElementById("modalOverlay").classList.remove("hidden");
 }
 
-document.getElementById("cancelDelete").onclick = () => {
-  deleteId = null;
-  document.getElementById("modalOverlay").classList.add("hidden");
-};
-
 document.getElementById("confirmDelete").onclick = async () => {
-  await fetch(`${API_BASE}/documents/${deleteId}`, { method: "DELETE" });
-  deleteId = null;
+  await fetch(`${API}/documents?id=${del.id}&name=${del.name}`, {
+    method: "DELETE"
+  });
   document.getElementById("modalOverlay").classList.add("hidden");
   loadDocuments();
 };
+
+document.getElementById("cancelDelete").onclick = () =>
+  document.getElementById("modalOverlay").classList.add("hidden");
 
 loadDocuments();
