@@ -1,62 +1,67 @@
+// ================================
+// CONFIG
+// ================================
 const API_BASE = "https://doc-apim-gateway.azure-api.net/doc-functions-api";
 
+// ================================
+// DOM ELEMENTS
+// ================================
 const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
-const tableBody = document.getElementById("documentsTable");
+const fileTableBody = document.getElementById("fileTableBody");
+const searchInput = document.getElementById("searchInput");
 
-window.onload = () => {
-  loadDocuments();
-};
+// ================================
+// LOAD FILES ON PAGE LOAD
+// ================================
+document.addEventListener("DOMContentLoaded", loadDocuments);
 
-/* ---------------------------
-   LOAD DOCUMENTS
----------------------------- */
+// ================================
+// LOAD DOCUMENTS
+// ================================
 async function loadDocuments() {
   try {
     const res = await fetch(`${API_BASE}/documents`);
-    if (!res.ok) throw new Error();
+    if (!res.ok) throw new Error("Failed to load documents");
 
-    const docs = await res.json();
-    renderDocuments(docs);
-  } catch {
+    const files = await res.json();
+    renderFiles(files);
+  } catch (err) {
     alert("Failed to load documents");
+    console.error(err);
   }
 }
 
-/* ---------------------------
-   RENDER DOCUMENTS
----------------------------- */
-function renderDocuments(docs) {
-  tableBody.innerHTML = "";
+// ================================
+// RENDER FILE TABLE
+// ================================
+function renderFiles(files) {
+  fileTableBody.innerHTML = "";
 
-  if (docs.length === 0) {
-    tableBody.innerHTML = `
-      <tr>
-        <td colspan="3" class="empty">No documents found</td>
-      </tr>`;
-    return;
-  }
+  const search = searchInput.value.toLowerCase();
 
-  docs.forEach(doc => {
-    const row = document.createElement("tr");
+  files
+    .filter(f => f.name.toLowerCase().includes(search))
+    .forEach(file => {
+      const row = document.createElement("tr");
 
-    row.innerHTML = `
-      <td>${doc.name}</td>
-      <td>${formatSize(doc.size || 0)}</td>
-      <td class="actions">
-        <button class="download" onclick="downloadDoc('${doc.id}')">⬇ Download</button>
-        <button class="delete" onclick="deleteDoc('${doc.id}')">🗑 Delete</button>
-      </td>
-    `;
+      row.innerHTML = `
+        <td>${file.name}</td>
+        <td>${file.size ? formatSize(file.size) : "-"}</td>
+        <td class="actions">
+          <button class="btn download" onclick="downloadFile('${file.id}')">Download</button>
+          <button class="btn delete" onclick="confirmDelete('${file.id}', '${file.name}')">Delete</button>
+        </td>
+      `;
 
-    tableBody.appendChild(row);
-  });
+      fileTableBody.appendChild(row);
+    });
 }
 
-/* ---------------------------
-   UPLOAD DOCUMENT
----------------------------- */
-uploadBtn.onclick = async () => {
+// ================================
+// UPLOAD FILE
+// ================================
+uploadBtn.addEventListener("click", async () => {
   if (!fileInput.files.length) {
     alert("Please select a file");
     return;
@@ -71,63 +76,54 @@ uploadBtn.onclick = async () => {
       body: formData
     });
 
-    if (!res.ok) throw new Error();
+    if (!res.ok) throw new Error("Upload failed");
 
     fileInput.value = "";
     loadDocuments();
-  } catch {
+  } catch (err) {
     alert("Upload failed");
+    console.error(err);
   }
-};
+});
 
-/* ---------------------------
-   DOWNLOAD
----------------------------- */
-function downloadDoc(id) {
-  window.open(`${API_BASE}/documents/${id}/download`, "_blank");
+// ================================
+// DOWNLOAD FILE
+// ================================
+function downloadFile(id) {
+  window.open(`${API_BASE}/documents/${id}`, "_blank");
 }
 
-/* ---------------------------
-   DELETE
----------------------------- */
-let deleteTargetId = null;
-
-function deleteDoc(id) {
-  deleteTargetId = id;
-  document.getElementById("modalOverlay").classList.remove("hidden");
+// ================================
+// DELETE FILE
+// ================================
+function confirmDelete(id, name) {
+  if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+  deleteFile(id);
 }
 
-document.getElementById("cancelDelete").onclick = () => {
-  deleteTargetId = null;
-  document.getElementById("modalOverlay").classList.add("hidden");
-};
-
-document.getElementById("confirmDelete").onclick = async () => {
-  if (!deleteTargetId) return;
-
+async function deleteFile(id) {
   try {
-    const res = await fetch(`${API_BASE}/documents/${deleteTargetId}`, {
+    const res = await fetch(`${API_BASE}/documents/${id}`, {
       method: "DELETE"
     });
 
-    if (!res.ok) throw new Error();
+    if (!res.ok) throw new Error("Delete failed");
 
-    document.getElementById("modalOverlay").classList.add("hidden");
-    deleteTargetId = null;
     loadDocuments();
-  } catch {
+  } catch (err) {
     alert("Delete failed");
+    console.error(err);
   }
-};
+}
 
+// ================================
+// SEARCH
+// ================================
+searchInput.addEventListener("input", loadDocuments);
 
-/* ---------------------------
-   UTIL
----------------------------- */
+// ================================
+// HELPERS
+// ================================
 function formatSize(bytes) {
-  if (bytes === 0) return "-";
-  const kb = bytes / 1024;
-  return kb > 1024
-    ? (kb / 1024).toFixed(1) + " MB"
-    : kb.toFixed(1) + " KB";
+  return (bytes / 1024).toFixed(1) + " KB";
 }
