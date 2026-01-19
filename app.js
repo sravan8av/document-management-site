@@ -1,12 +1,12 @@
 // ================= CONFIG =================
-const API_BASE = "https://doc-api.azure-api.net/doc-functions";
+const API_BASE = "https://doc-api.azure-api.net"; // ✅ FIXED
 const SUBSCRIPTION_KEY = "PASTE_YOUR_APIM_SUBSCRIPTION_KEY_HERE";
 
 const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
 const tableBody = document.getElementById("fileTableBody");
 
-// Common headers
+// Common headers (USED ONLY FOR JSON REQUESTS)
 function apiHeaders(extra = {}) {
   return {
     "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY,
@@ -62,8 +62,8 @@ uploadBtn.onclick = async () => {
   try {
     const res = await fetch(`${API_BASE}/documents`, {
       method: "POST",
-      headers: apiHeaders(), // ❌ DO NOT set Content-Type
       body: formData
+      // ✅ NO HEADERS HERE (VERY IMPORTANT)
     });
 
     if (!res.ok) throw new Error(await res.text());
@@ -80,7 +80,7 @@ uploadBtn.onclick = async () => {
 // ================= DOWNLOAD =================
 function downloadFile(name) {
   window.location.href =
-    `${API_BASE}/DownloadDocument?name=${encodeURIComponent(name)}`
+    `${API_BASE}/documents/download?name=${encodeURIComponent(name)}`
     + `&subscription-key=${SUBSCRIPTION_KEY}`;
 }
 
@@ -112,9 +112,4 @@ document.getElementById("confirmDelete").onclick = async () => {
   }
 };
 
-document.getElementById("cancelDelete").onclick = () => {
-  document.getElementById("modalOverlay").classList.add("hidden");
-};
-
-// ================= INIT =================
-loadDocuments();
+document.getElementById("cancelDelete").on
