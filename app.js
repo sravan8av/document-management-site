@@ -1,5 +1,5 @@
 // ================= CONFIG =================
-const API = "https://doc-apim-gateway.azure-api.net/doc-functions-api";
+const API = "https://doc-api.azure-api.net";
 
 const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
