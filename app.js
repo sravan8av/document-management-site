@@ -6,16 +6,19 @@ const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
 const tableBody = document.getElementById("fileTableBody");
 
-// Common headers (DO NOT set Content-Type for uploads)
-const jsonHeaders = {
-  "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY
-};
+// Common headers
+function apiHeaders(extra = {}) {
+  return {
+    "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY,
+    ...extra
+  };
+}
 
 // ================= LOAD DOCUMENTS =================
 async function loadDocuments() {
   try {
-    const res = await fetch(`${API_BASE}/ListDocuments`, {
-      headers: jsonHeaders
+    const res = await fetch(`${API_BASE}/documents`, {
+      headers: apiHeaders()
     });
 
     if (!res.ok) throw new Error(await res.text());
@@ -37,69 +40,81 @@ async function loadDocuments() {
           <td>${d.name}</td>
           <td>${(d.size / 1024).toFixed(1)} KB</td>
           <td class="actions">
-            <button class="download" onclick="downloadFile('${d.name}')">
-              Download
-            </button>
-            <button class="delete" onclick="confirmDelete('${d.id}','${d.name}')">
-              Delete
-            </button>
+            <button onclick="downloadFile('${d.name}')">Download</button>
+            <button onclick="confirmDelete('${d.id}','${d.name}')">Delete</button>
           </td>
         </tr>`;
     });
   } catch (err) {
     console.error(err);
-    alert("Error loading documents");
+    alert("Failed to load documents");
   }
 }
 
-// ================= UPLOAD DOCUMENT =================
+// ================= UPLOAD =================
 uploadBtn.onclick = async () => {
   const file = fileInput.files[0];
-  if (!file) {
-    alert("Please select a file");
-    return;
-  }
+  if (!file) return alert("Select a file");
 
   const formData = new FormData();
   formData.append("file", file);
 
   try {
-    const res = await fetch(`${API_BASE}/UploadDocument`, {
+    const res = await fetch(`${API_BASE}/documents`, {
       method: "POST",
-      headers: {
-        "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY
-        // ❌ DO NOT SET Content-Type
-      },
+      headers: apiHeaders(), // ❌ DO NOT set Content-Type
       body: formData
     });
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error(text);
-      alert("Upload failed");
-      return;
-    }
+    if (!res.ok) throw new Error(await res.text());
 
     fileInput.value = "";
     await loadDocuments();
     alert("Upload successful ✅");
   } catch (err) {
     console.error(err);
-    alert("Upload error");
+    alert("Upload failed");
   }
 };
 
 // ================= DOWNLOAD =================
 function downloadFile(name) {
-  const url =
-    `${API_BASE}/DownloadDocument?name=${encodeURIComponent(name)}`;
+  window.location.href =
+    `${API_BASE}/DownloadDocument?name=${encodeURIComponent(name)}`
+    + `&subscription-key=${SUBSCRIPTION_KEY}`;
+}
 
-  fetch(url, {
-    headers: jsonHeaders
-  })
-    .then(res => {
-      if (!res.ok) throw new Error("Download failed");
-      return res.blob();
-    })
-    .then(blob => {
-      const a = docum
+// ================= DELETE =================
+let deleteTarget = {};
+
+function confirmDelete(id, name) {
+  deleteTarget = { id, name };
+  document.getElementById("modalOverlay").classList.remove("hidden");
+}
+
+document.getElementById("confirmDelete").onclick = async () => {
+  try {
+    const res = await fetch(
+      `${API_BASE}/documents?id=${deleteTarget.id}&name=${deleteTarget.name}`,
+      {
+        method: "DELETE",
+        headers: apiHeaders()
+      }
+    );
+
+    if (!res.ok) throw new Error(await res.text());
+
+    document.getElementById("modalOverlay").classList.add("hidden");
+    loadDocuments();
+  } catch (err) {
+    console.error(err);
+    alert("Delete failed");
+  }
+};
+
+document.getElementById("cancelDelete").onclick = () => {
+  document.getElementById("modalOverlay").classList.add("hidden");
+};
+
+// ================= INIT =================
+loadDocuments();
