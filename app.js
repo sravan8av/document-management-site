@@ -1,6 +1,8 @@
 // ================= CONFIG =================
-const API = "https://doc-api.azure-api.net";
+// ⚠️ Replace ONLY the APIM name if different
+const API_BASE_URL = "https://doc-api.azure-api.net";
 
+// ================= ELEMENTS =================
 const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
 const tableBody = document.getElementById("fileTableBody");
@@ -8,13 +10,13 @@ const tableBody = document.getElementById("fileTableBody");
 // ================= LOAD DOCUMENTS =================
 async function loadDocuments() {
   try {
-    const res = await fetch(`${API}/documents`);
+    const res = await fetch(`${API_BASE_URL}/documents`);
     if (!res.ok) throw new Error("Failed to load documents");
 
     const docs = await res.json();
     tableBody.innerHTML = "";
 
-    if (!docs.length) {
+    if (!docs || docs.length === 0) {
       tableBody.innerHTML = `
         <tr>
           <td colspan="3" class="empty">No documents found</td>
@@ -22,16 +24,16 @@ async function loadDocuments() {
       return;
     }
 
-    docs.forEach(d => {
+    docs.forEach(doc => {
       tableBody.innerHTML += `
         <tr>
-          <td>${d.name}</td>
-          <td>${(d.size / 1024).toFixed(1)} KB</td>
+          <td>${doc.name}</td>
+          <td>${(doc.size / 1024).toFixed(1)} KB</td>
           <td class="actions">
-            <button class="download" onclick="downloadFile('${d.name}')">
+            <button class="download" onclick="downloadFile('${doc.name}')">
               Download
             </button>
-            <button class="delete" onclick="confirmDelete('${d.id}','${d.name}')">
+            <button class="delete" onclick="confirmDelete('${doc.id}','${doc.name}')">
               Delete
             </button>
           </td>
@@ -46,6 +48,7 @@ async function loadDocuments() {
 // ================= UPLOAD DOCUMENT =================
 uploadBtn.onclick = async () => {
   const file = fileInput.files[0];
+
   if (!file) {
     alert("Please select a file");
     return;
@@ -55,14 +58,14 @@ uploadBtn.onclick = async () => {
   formData.append("file", file);
 
   try {
-    const res = await fetch(`${API}/documents`, {
+    const res = await fetch(`${API_BASE_URL}/documents`, {
       method: "POST",
-      body: formData   // 🚨 DO NOT SET CONTENT-TYPE
+      body: formData // 🚨 DO NOT SET Content-Type
     });
 
     if (!res.ok) {
-      const text = await res.text();
-      console.error(text);
+      const errorText = await res.text();
+      console.error(errorText);
       alert("Upload failed");
       return;
     }
@@ -76,12 +79,13 @@ uploadBtn.onclick = async () => {
   }
 };
 
-// ================= DOWNLOAD =================
+// ================= DOWNLOAD DOCUMENT =================
 function downloadFile(name) {
-  window.location.href = `${API}/documents/download?name=${encodeURIComponent(name)}`;
+  window.location.href =
+    `${API_BASE_URL}/documents/download?name=${encodeURIComponent(name)}`;
 }
 
-// ================= DELETE =================
+// ================= DELETE DOCUMENT =================
 let deleteTarget = {};
 
 function confirmDelete(id, name) {
@@ -91,12 +95,15 @@ function confirmDelete(id, name) {
 
 document.getElementById("confirmDelete").onclick = async () => {
   try {
-    await fetch(`${API}/documents?id=${deleteTarget.id}&name=${deleteTarget.name}`, {
-      method: "DELETE"
-    });
+    const res = await fetch(
+      `${API_BASE_URL}/documents?id=${deleteTarget.id}&name=${encodeURIComponent(deleteTarget.name)}`,
+      { method: "DELETE" }
+    );
+
+    if (!res.ok) throw new Error("Delete failed");
 
     document.getElementById("modalOverlay").classList.add("hidden");
-    loadDocuments();
+    await loadDocuments();
   } catch (err) {
     console.error(err);
     alert("Delete failed");
