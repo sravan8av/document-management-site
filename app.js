@@ -112,4 +112,9 @@ document.getElementById("confirmDelete").onclick = async () => {
   }
 };
 
-document.getElementById("cancelDelete").on
+document.getElementById("cancelDelete").onclick = () => {
+  document.getElementById("modalOverlay").classList.add("hidden");
+};
+
+// ================= INIT =================
+loadDocuments();
