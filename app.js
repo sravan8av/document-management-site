@@ -7,10 +7,9 @@ const uploadBtn = document.getElementById("uploadBtn");
 const tableBody = document.getElementById("fileTableBody");
 
 // ================= HEADERS =================
-function apiHeaders(extra = {}) {
+function apiHeaders() {
   return {
-    "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY,
-    ...extra
+    "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY
   };
 }
 
@@ -43,9 +42,9 @@ async function loadDocuments() {
             <button onclick="downloadFile('${d.id}', '${d.name}')">Download</button>
             <button onclick="confirmDelete('${d.id}')">Delete</button>
           </td>
-        </tr>
-      `;
+        </tr>`;
     });
+
   } catch (err) {
     console.error(err);
     alert("Failed to load documents");
@@ -70,7 +69,7 @@ uploadBtn.onclick = async () => {
 
     fileInput.value = "";
     await loadDocuments();
-    alert("Upload successful ✅");
+    alert("Upload successful");
   } catch (err) {
     console.error(err);
     alert("Upload failed");
@@ -82,14 +81,10 @@ async function downloadFile(id, fileName) {
   try {
     const res = await fetch(
       `${API_BASE}/documents/download?id=${id}`,
-      {
-        headers: apiHeaders()
-      }
+      { headers: apiHeaders() }
     );
 
-    if (!res.ok) {
-      throw new Error(await res.text());
-    }
+    if (!res.ok) throw new Error(await res.text());
 
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
@@ -109,17 +104,17 @@ async function downloadFile(id, fileName) {
 }
 
 // ================= DELETE =================
-let deleteTargetId = null;
+let deleteId = null;
 
 function confirmDelete(id) {
-  deleteTargetId = id;
+  deleteId = id;
   document.getElementById("modalOverlay").classList.remove("hidden");
 }
 
 document.getElementById("confirmDelete").onclick = async () => {
   try {
     const res = await fetch(
-      `${API_BASE}/documents/${deleteTargetId}`,
+      `${API_BASE}/documents/${deleteId}`,
       {
         method: "DELETE",
         headers: apiHeaders()
