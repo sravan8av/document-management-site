@@ -95,7 +95,7 @@ function confirmDelete(id, name) {
 document.getElementById("confirmDelete").onclick = async () => {
   try {
     const res = await fetch(
-      `${API_BASE}/documents?id=${deleteTarget.id}&name=${deleteTarget.name}`,
+      `${API_BASE}/documents/${deleteTarget.id}`,
       {
         method: "DELETE",
         headers: apiHeaders()
