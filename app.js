@@ -81,24 +81,17 @@ uploadBtn.onclick = async () => {
 async function downloadFile(blobName, originalName) {
   try {
     const res = await fetch(
-      `${API_BASE}/documents/download?blobName=${encodeURIComponent(blobName)}`,
-      {
-        headers: {
-          "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY
-        }
-      }
+      `${API_BASE}/documents/download?blobName=${encodeURIComponent(blobName)}`
     );
 
-    if (!res.ok) {
-      throw new Error(await res.text());
-    }
+    if (!res.ok) throw new Error(await res.text());
 
     const blob = await res.blob();
-
     const url = window.URL.createObjectURL(blob);
+
     const a = document.createElement("a");
     a.href = url;
-    a.download = originalName; // user-friendly filename
+    a.download = originalName;
     document.body.appendChild(a);
     a.click();
 
