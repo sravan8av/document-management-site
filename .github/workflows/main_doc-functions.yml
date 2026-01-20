@@ -15,10 +15,10 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     permissions:
       contents: read #This is required for actions/checkout
-
+      
     steps:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@v4
@@ -29,7 +29,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: 'Resolve Project Dependencies Using Npm'
-        shell: bash
+        shell: pwsh
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           npm install
@@ -37,17 +37,14 @@ jobs:
           npm run test --if-present
           popd
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
-
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: release.zip
+          path: .
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     permissions:
       id-token: write #This is required for requesting the JWT
@@ -58,18 +55,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-
-      - name: Unzip artifact for deployment
-        run: |
-          unzip release.zip
-          rm release.zip
       
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_D9597776816D4F30BBD43C2C09B8217E }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_614F13CBF6CD4DC7909D38DFCCD819C1 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_4627BC851D714E90B80DFBF71BCAFB59 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_FE673CC490F4475482149DB89E267C8E }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_2DDB0E67B0AE41DDAC3A8EF322798A23 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0C6F684C9F4041579987079FF1B0BFD2 }}
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
