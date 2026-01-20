@@ -78,11 +78,40 @@ uploadBtn.onclick = async () => {
 };
 
 // ================= DOWNLOAD =================
-function downloadFile(name) {
-  window.location.href =
-    `${API_BASE}/documents/download?name=${encodeURIComponent(name)}`
-    + `&subscription-key=${SUBSCRIPTION_KEY}`;
+async function downloadFile(blobName) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/documents/download?name=${encodeURIComponent(blobName)}`,
+      {
+        method: "GET",
+        headers: {
+          "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY
+        }
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
+
+    const blob = await res.blob();
+
+    // Create temporary download link
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = blobName;
+    document.body.appendChild(a);
+    a.click();
+
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error(err);
+    alert("Download failed");
+  }
 }
+
 
 // ================= DELETE =================
 let deleteTarget = {};
