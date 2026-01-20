@@ -1,6 +1,6 @@
 // ================= CONFIG =================
 const API_BASE = "https://doc-api.azure-api.net";
-const SUBSCRIPTION_KEY = "PASTE_YOUR_APIM_SUBSCRIPTION_KEY_HERE";
+const SUBSCRIPTION_KEY = "d71c1f8055294405bbe865843739cca4";
 
 const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
