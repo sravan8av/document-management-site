@@ -78,12 +78,11 @@ uploadBtn.onclick = async () => {
 };
 
 // ================= DOWNLOAD =================
-async function downloadFile(blobName) {
+async function downloadFile(blobName, originalName) {
   try {
     const res = await fetch(
-      `${API_BASE}/documents/download?name=${encodeURIComponent(blobName)}`,
+      `${API_BASE}/documents/download?blobName=${encodeURIComponent(blobName)}`,
       {
-        method: "GET",
         headers: {
           "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY
         }
@@ -96,11 +95,10 @@ async function downloadFile(blobName) {
 
     const blob = await res.blob();
 
-    // Create temporary download link
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = blobName;
+    a.download = originalName; // user-friendly filename
     document.body.appendChild(a);
     a.click();
 
@@ -111,6 +109,7 @@ async function downloadFile(blobName) {
     alert("Download failed");
   }
 }
+
 
 
 // ================= DELETE =================
