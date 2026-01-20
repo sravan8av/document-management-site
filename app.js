@@ -1,12 +1,12 @@
 // ================= CONFIG =================
 const API_BASE = "https://doc-api.azure-api.net";
-const SUBSCRIPTION_KEY = "d71c1f8055294405bbe865843739cca4";
+const SUBSCRIPTION_KEY = "PASTE_YOUR_APIM_SUBSCRIPTION_KEY_HERE";
 
 const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
 const tableBody = document.getElementById("fileTableBody");
 
-// ================= COMMON HEADERS =================
+// ================= HEADERS =================
 function apiHeaders(extra = {}) {
   return {
     "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY,
@@ -26,31 +26,28 @@ async function loadDocuments() {
     const docs = await res.json();
     tableBody.innerHTML = "";
 
-    if (!Array.isArray(docs) || docs.length === 0) {
+    if (!docs.length) {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="3" class="empty">No documents found</td>
+          <td colspan="3">No documents found</td>
         </tr>`;
       return;
     }
 
-    docs.forEach(doc => {
+    docs.forEach(d => {
       tableBody.innerHTML += `
         <tr>
-          <td>${doc.name}</td>
-          <td>${(doc.size / 1024).toFixed(1)} KB</td>
-          <td class="actions">
-            <button onclick="downloadFile('${encodeURIComponent(doc.name)}')">
-              Download
-            </button>
-            <button onclick="confirmDelete('${doc.id}', '${doc.name}')">
-              Delete
-            </button>
+          <td>${d.name}</td>
+          <td>${(d.size / 1024).toFixed(1)} KB</td>
+          <td>
+            <button onclick="downloadFile('${d.id}', '${d.name}')">Download</button>
+            <button onclick="confirmDelete('${d.id}')">Delete</button>
           </td>
-        </tr>`;
+        </tr>
+      `;
     });
   } catch (err) {
-    console.error("Load failed:", err);
+    console.error(err);
     alert("Failed to load documents");
   }
 }
@@ -67,7 +64,6 @@ uploadBtn.onclick = async () => {
     const res = await fetch(`${API_BASE}/documents`, {
       method: "POST",
       body: formData
-      // ⚠️ DO NOT set headers for multipart
     });
 
     if (!res.ok) throw new Error(await res.text());
@@ -76,23 +72,18 @@ uploadBtn.onclick = async () => {
     await loadDocuments();
     alert("Upload successful ✅");
   } catch (err) {
-    console.error("Upload failed:", err);
+    console.error(err);
     alert("Upload failed");
   }
 };
 
-// ================= DOWNLOAD =================
-async function downloadFile(encodedName) {
-  const name = decodeURIComponent(encodedName);
-
+// ================= DOWNLOAD (FIXED) =================
+async function downloadFile(id, fileName) {
   try {
     const res = await fetch(
-      `${API_BASE}/documents/download?name=${encodeURIComponent(name)}`,
+      `${API_BASE}/documents/download?id=${id}`,
       {
-        method: "GET",
-        headers: {
-          "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY
-        }
+        headers: apiHeaders()
       }
     );
 
@@ -101,34 +92,34 @@ async function downloadFile(encodedName) {
     }
 
     const blob = await res.blob();
-
     const url = window.URL.createObjectURL(blob);
+
     const a = document.createElement("a");
     a.href = url;
-    a.download = name;
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
 
     a.remove();
     window.URL.revokeObjectURL(url);
   } catch (err) {
-    console.error("Download failed:", err);
+    console.error(err);
     alert("Download failed");
   }
 }
 
 // ================= DELETE =================
-let deleteTarget = {};
+let deleteTargetId = null;
 
-function confirmDelete(id, name) {
-  deleteTarget = { id, name };
+function confirmDelete(id) {
+  deleteTargetId = id;
   document.getElementById("modalOverlay").classList.remove("hidden");
 }
 
 document.getElementById("confirmDelete").onclick = async () => {
   try {
     const res = await fetch(
-      `${API_BASE}/documents/${deleteTarget.id}`,
+      `${API_BASE}/documents/${deleteTargetId}`,
       {
         method: "DELETE",
         headers: apiHeaders()
@@ -140,7 +131,7 @@ document.getElementById("confirmDelete").onclick = async () => {
     document.getElementById("modalOverlay").classList.add("hidden");
     loadDocuments();
   } catch (err) {
-    console.error("Delete failed:", err);
+    console.error(err);
     alert("Delete failed");
   }
 };
