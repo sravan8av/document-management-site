@@ -1,6 +1,6 @@
 // ================= CONFIG =================
 const API_BASE = "https://doc-api.azure-api.net";
-const SUBSCRIPTION_KEY = "REPLACE_WITH_YOUR_REAL_APIM_KEY";
+const SUBSCRIPTION_KEY = "d71c1f8055294405bbe865843739cca4";
 
 // ================= DOM =================
 const fileInput = document.getElementById("fileInput");
