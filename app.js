@@ -91,14 +91,15 @@ function confirmDelete(id, name) {
   deleteTarget = { id, name };
   document.getElementById("modalOverlay").classList.remove("hidden");
 }
-
 document.getElementById("confirmDelete").onclick = async () => {
   try {
     const res = await fetch(
       `${API_BASE}/documents/${deleteTarget.id}`,
       {
         method: "DELETE",
-        headers: apiHeaders()
+        headers: {
+          "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY
+        }
       }
     );
 
@@ -111,6 +112,7 @@ document.getElementById("confirmDelete").onclick = async () => {
     alert("Delete failed");
   }
 };
+
 
 document.getElementById("cancelDelete").onclick = () => {
   document.getElementById("modalOverlay").classList.add("hidden");
